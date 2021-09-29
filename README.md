@@ -11,3 +11,5 @@ The results of my experimentation are stored in a jupyter notebook under the exa
 and changing the default result count. Moving on to the search endpoint I tried querying by topics and time. I tried querying for tweets on the Icelandic government elections going on this evening along with all tweets on cats and dogs in english within the last hour that included pictures.
 
 It was very fun and I look forward to working with the API. 
+
+## Milestone 1(b) - Experimenting with the Google API
