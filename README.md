@@ -3,7 +3,7 @@
 ## Milestone 1(a) - Experimenting with the Twitter API
 
 Full experiment under:
-- examples/experiments_TwitterAPI.ipynb
+- examperiments/experiments_TwitterAPI.ipynb
 
 After getting access to the API I experimented with some requests to some endpoints from my visual studio code environment.
 
@@ -17,7 +17,7 @@ It was very fun and I look forward to working with the API.
 
 ## Milestone 1(b) - Experimenting with the Google API
 Full experiment under:
-- examples/experiments_GoogleAPI.ipynb 
+- experiments/experiments_GoogleAPI.ipynb 
 
 And additional files from using google console under:
 - experiments/Google_API_ConsoleCommands.txt 
