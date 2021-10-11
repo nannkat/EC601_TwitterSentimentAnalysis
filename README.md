@@ -1,5 +1,40 @@
 # Twitter Sentiment Analysis Project
 ## By Nanna Katrín Hannesdóttir
+## Milestone 2(b) - Political Spectrum Speculator 'polispec' Library 
+### Mission
+My project was to build a library that analyses sentiment of tweets about prominent politicians and gives statistics on number of positive vs. negative tweets about them. The mission is to create an easy way to get informed about how popular certain politicians are and also perhaps get a reality check regarding 'the other side', the politicians you don't agree with. Trump might seem really unpopular in someone's circle, but how many people are tweeting about him with positive sentiment? Is Biden becomin increasingly unpopular? The library should also have functions to get actual text examples of what people are saying in their tweets. That way it can give both numerical and conceptual insight simultaniously.
+
+### Implementation
+The resulting library can be found under the folder /polispec in this repository. The implementation went overall well with the mvp goal reached and some of the other user stories as well (defined under milestone 2a). I organized the modular design so that the user would only have to use simple commands to get statistics and/or examples. Two modules, 'twitter.py' and 'google_api.py' are background modules that organize communication with the twitter and google APIs, handling authentication and requests. The user does not interact with those. The main module is the 'polispec.py' that utilises the other two modules and which contains the classes and functions needed for analysis. This is the module the user imports from and interacts with.
+
+### How to test/run
+In the /polispec folder there is also a jupyter notebook with a short demo of the library, 'polispec_demo.ipynb! It should be easy to run, only requiring some change of variables for authentication.<br>
+
+<b>Authentication</b><br>
+What you need to do to get the authentication correct:
+- Inside 'twitter.py' modify the path at the top to contain with your own credential.yaml file containing the bearer token. For safety and convenience I used .yaml files for the twitter tokens. The format and variable names for the .yaml file are specified in 'twitter.py'
+- Inside 'google_api.py' change the path to the path to your google credentials .json file
+
+After this you should be all set with authentication
+
+<b>Libraries</b><br>
+Please make sure you have the following libraries installed:
+- language_V1 from google.cloud
+- ipywidgets
+- prettytable
+- pandas
+- requests
+- yaml
+- json
+- re
+- datetime
+
+With this in place, running the demo should be straight forward.
+
+### Conclusion
+This was a fun project and I feel lucky to get the chance to explore these APIs. It gave me good insights into modular design and organization and building queries and requests. It also gave me some insight into the status of natural language processing. As my library included in part displaying text examples of tweets, I got a look at how well the google api sentiment analysis was doing from time to time. The biggest problem seemed to be that the API can't detect sarcasm. On twitter many people use sarcasm to express themselves and this resulted in some pretty drastic misclassifications. Tweets about politicians were often said to be positive when in reality the person was clearly using positive words in a sarcastic manner. It will be interesting to see how engineers try to tackle this problem in the future. Can computers be sarcastic?
+
+# Older Milestones
 ## Milestone 1(a) - Experimenting with the Twitter API
 
 Full experiment under:
