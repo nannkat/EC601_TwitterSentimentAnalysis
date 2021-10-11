@@ -6,6 +6,9 @@ import google_api
 from prettytable import PrettyTable
 import ipywidgets as widgets
 
+"""The polispec library itself"""
+
+
 class Politician:
 
     __POS = 'Positive'
@@ -22,7 +25,7 @@ class Politician:
         self.__hours = 0
         self.__start_time = None
         self.__end_time = None
-        self.examples = None
+        self.__examples = None
 
     def __str__(self):
         return '{}, tweets: {}, positive:{}, negative: {}, neutral: {}'.format(self.name, self.get_tweet_count(), self.get_pos_tweet_count(), self.get_neg_tweet_count(), self.get_neut_tweet_count())
@@ -35,7 +38,7 @@ class Politician:
         self.__hours = 0
         self.__start_time = None
         self.__end_time = None
-        self.examples = None
+        self.__examples = None
 
     def get_tweet_count(self):
         return self.__analyzed_tweet_count
@@ -58,6 +61,7 @@ class Politician:
         return neat_end
     
     def display_statistics(self):
+        """Displays the statistics of analysis for the politician"""
         ppos = str(round((self.__positive_tweet_count/self.__analyzed_tweet_count)*100, 2)) + '%'
         pneg = str(round((self.__negative_tweet_count/self.__analyzed_tweet_count)*100, 2)) + '%'
         pneut = str(round((self.__neutral_tweet_count/self.__analyzed_tweet_count)*100, 2)) + '%'
@@ -77,29 +81,34 @@ class Politician:
 
 
     def __create_twitter_query(self, hours):
-
+        """returns url, headers and parameters ready to query"""
         headers = twitter.create_headers()
         url = twitter.create_url(self.name)
         self.__end_time, self.__start_time = twitter.get_dates(hours)
         parameters = twitter.create_params(max_results=100, start_time=self.__start_time, end_time=self.__end_time)
+
         print("Query for twitter api: {}".format(url))
 
         return (url, headers, parameters)
     
-    def __get_tweet_batch(self, url, headers, parameters, next_token={}):
-
+    def __get_tweet_batch(self, url, headers, parameters, next_token={}, iteration = 0):
+        """Returns a batch of tweets and next token for continuation of analysis"""
         tweet_batch = twitter.connect_to_endpoint_twitter(url, headers, parameters, next_token=next_token)
-        self.__analyzed_tweet_count += len(tweet_batch['data'])
         try:
-             next = tweet_batch['meta']['next_token']
+            next = tweet_batch['meta']['next_token']
+            if iteration == 0:
+                self.__analyzed_tweet_count += len(tweet_batch['data'])
+            else: 
+                self.__analyzed_tweet_count += len(tweet_batch['data'][0:-1])   #prevent duplicates at end/beginning of batch
         except KeyError:
             next = None
+            #self.__analyzed_tweet_count += len(tweet_batch['data']) 
         return (tweet_batch, next)
 
 
     def analyze_tweets(self, hour_count = 1, display = True):
         if hour_count > 24:
-            print("Max 1 day!")
+            print("Max 1 day!") #for now, to prevent data overflow
             return
         else:
             #prepare
@@ -110,18 +119,21 @@ class Politician:
             url, headers, parameters = self.__create_twitter_query(hour_count)
 
             print("\nAnalyzing....\n")
-            tweet_dict = {'sentiment':[], 'text':[], 'score':[], 'like_count':[], 'date':[]}
-            next = 'start'
-            max = 150
-            loop = 0
-            #loop
+
+            tweet_dict = {'sentiment':[], 'text':[], 'score':[], 'like_count':[], 'date':[]}    #dictionary for examples
+            next = {}
+            iteration = 0
             while next != None:
-                loop += 1
-                print('loop {}'.format(loop))
-                tweet_batch, next = self.__get_tweet_batch(url, headers, parameters)
+                tweet_batch, next = self.__get_tweet_batch(url, headers, parameters, next_token=next, iteration = iteration)
+
+                #prevent duplicates at end/beginning of batch
+                if iteration == 0:
+                    data = tweet_batch['data']
+                else:
+                    data = tweet_batch['data'][1:]
 
                 #analyze sentiment of batch
-                for response in tweet_batch['data']:
+                for response in data:
                     try:
                         tweet = Tweet(response)
                         tweet.clean_tweet()
@@ -141,21 +153,24 @@ class Politician:
                         else:
                             tweet_dict['sentiment'].append(self.__NEUT)
                             self.__neutral_tweet_count +=1
+
                     except Exception as e:
                         print(e)
 
                 #go to next batch at beginning of loop
-                if self.get_tweet_count() > max:
-                    break
+                iteration += 1
                 print("Tweets processed: {}".format(self.__analyzed_tweet_count))
-    
-        self.examples = pd.DataFrame(data=tweet_dict)
-        self.examples = self.examples.sort_values(by='like_count', ascending=False).reset_index(drop=True)
-
+        #create example dataframe
+        self.__examples = pd.DataFrame(data=tweet_dict)
+        self.__examples = self.__examples.drop_duplicates()
+        self.__examples = self.__examples.sort_values(by='like_count', ascending=False).reset_index(drop=True)
+        print("Analysis complete.")
+        print()
         if display:
             self.display_statistics()
 
     def summary(self):
+        """Displays a summary with both statistics and a few examples"""
         pos = self.examples_positive()
         neg = self.examples_negative()
         neut = self.examples_neutral()
@@ -174,47 +189,28 @@ class Politician:
 
 
     def examples_all(self, page_size = 3):
-        return Example(self.examples, page_size = page_size)
+        """returns an example object with all the tweets queried and page size indicating number of tweets displayed at a time"""
+        return Example(self.__examples, page_size = page_size)
 
     def examples_positive(self, page_size = 3):
-        positive = self.examples[self.examples['sentiment'] == self.__POS].reset_index(drop=True)
+        """returns an example object with all the positive tweets queried and page size indicating number of tweets displayed at a time"""
+        positive = self.__examples[self.__examples['sentiment'] == self.__POS].reset_index(drop=True)
         return Example(positive, page_size = page_size, sentiment='Positive')
 
     def examples_negative(self, page_size = 3):
-        negative = self.examples[self.examples['sentiment'] == self.__NEG].reset_index(drop=True)
+        """returns an example object with all the negative tweets queried and page size indicating number of tweets displayed at a time"""
+        negative = self.__examples[self.__examples['sentiment'] == self.__NEG].reset_index(drop=True)
         return Example(negative, page_size = page_size, sentiment='Negative')
 
     def examples_neutral(self, page_size = 3):
-        neutral = self.examples[self.examples['sentiment'] == self.__NEUT].reset_index(drop=True)
+        """returns an example object with all the neutral tweets queried and page size indicating number of tweets displayed at a time"""
+        neutral = self.__examples[self.__examples['sentiment'] == self.__NEUT].reset_index(drop=True)
         return Example(neutral, page_size = page_size, sentiment='Neutral')
 
 
-def compare(politician1, politician2):
-
-        ppos1 = str(round((politician1.get_pos_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
-        pneg1 = str(round((politician1.get_neg_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
-        pneut1 = str(round((politician1.get_neut_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
-
-        ppos2 = str(round((politician2.get_pos_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
-        pneg2 = str(round((politician2.get_neg_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
-        pneut2 = str(round((politician2.get_neut_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
-
-        table = PrettyTable()
-        table.title = 'Statistic of sentiment for ' + politician1.name + ' vs. ' + politician2.name
-        table.field_names = ['Sentiment', 'Percentage ' + politician1.name, 'Percentage ' + politician2.name ]
-        table.add_row(['Positive', ppos1, ppos2])
-        table.add_row(['Negaitve', pneg1, pneg2])
-        table.add_row(['Neutral', pneut1, pneut2])
-
-
-        print('-------------------------------------')
-        print('RESULTS')
-        print(table)
-        print()
-        print("Of {} tweets on {} from {} to {}, {} were positive, {} were negative, {} were neutral".format(str(politician1.get_tweet_count()), politician1.name,str(politician1.get_start_time()), str(politician1.get_end_time()), ppos1, pneg1, pneut1))
-        print("Of {} tweets on {} from {} to {}, {} were positive, {} were negative, {} were neutral".format(str(politician2.get_tweet_count()), politician2.name, str(politician2.get_start_time()), str(politician2.get_end_time()), ppos2, pneg2, pneut2))
 
 class Example:
+    """Class of example object that are easy to view and flip through. Uses ipywidget Output function to dispaly tweets"""
 
     def __init__(self, data, page_size, sentiment = ''):
         self.__example = data
@@ -224,13 +220,16 @@ class Example:
         self.__example_viewer = widgets.Output(layout={'border': '1px solid black'})
 
     def clear(self):
+       """Reset viewer"""
        self.__example_viewer = widgets.Output(layout={'border': '1px solid black'})
        self.__current_index = 0
 
     def next(self, header = True):
+        """Gets next examples and displays them"""
         if header:
             self.__example_viewer.append_display_data(widgets.HTML('<b>Example ' + self.__sentiment + ' Tweets</b>'))
 
+        #creating viewer content
         for i in range(self.__current_index, self.__current_index + self.__page_size):
             try:
                 tweet = widgets.HTML(" <i>'{}'</i><br>".format(self.__example.at[i,'text']))
@@ -243,10 +242,35 @@ class Example:
                 self.__example_viewer.append_display_data(info)
             except KeyError:
                 break
-
+        #update index for next call
         self.__current_index += self.__page_size
 
 
+def compare(politician1, politician2):
+
+    """Function that prints comparitive statistics for two politician objects"""
+
+    ppos1 = str(round((politician1.get_pos_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
+    pneg1 = str(round((politician1.get_neg_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
+    pneut1 = str(round((politician1.get_neut_tweet_count()/politician1.get_tweet_count())*100, 2)) + '%'
+
+    ppos2 = str(round((politician2.get_pos_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
+    pneg2 = str(round((politician2.get_neg_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
+    pneut2 = str(round((politician2.get_neut_tweet_count()/politician2.get_tweet_count())*100, 2)) + '%'
+
+    table = PrettyTable()
+    table.title = 'Statistic of sentiment for ' + politician1.name + ' vs. ' + politician2.name
+    table.field_names = ['Sentiment', 'Percentage ' + politician1.name, 'Percentage ' + politician2.name ]
+    table.add_row(['Positive', ppos1, ppos2])
+    table.add_row(['Negaitve', pneg1, pneg2])
+    table.add_row(['Neutral', pneut1, pneut2])
+
+    print('-------------------------------------')
+    print('RESULTS')
+    print(table)
+    print()
+    print("Of {} tweets on {} from {} to {}, {} were positive, {} were negative, {} were neutral".format(str(politician1.get_tweet_count()), politician1.name,str(politician1.get_start_time()), str(politician1.get_end_time()), ppos1, pneg1, pneut1))
+    print("Of {} tweets on {} from {} to {}, {} were positive, {} were negative, {} were neutral".format(str(politician2.get_tweet_count()), politician2.name, str(politician2.get_start_time()), str(politician2.get_end_time()), ppos2, pneg2, pneut2))
 
    
 
