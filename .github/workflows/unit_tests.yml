@@ -36,7 +36,6 @@ jobs:
           pip3 install google-cloud-language
           pip3 install ipywidgets
           pip3 install pyaml
-          -m pip3 install re
           pip3 install datetime
           pip3 install json
           pip3 install prettytable
