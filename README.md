@@ -2,13 +2,22 @@
 ## By Nanna Katrín Hannesdóttir
 
 ## Project 3(a) Testing
-Currently working on adding tests and actions file....
+For this project some tests and modifications were added.
+
+Following is an overview of the modifications:
+- The polispec library was made into a library by adding a __init__.py, it is now stored in a subfolder polispec/polispec. The demo is still in polispec/polispec_demo.ipynb.
+- Unit tests were designed using the python unittest module, they are stored under polispec/unit_tests.py
+- Some larger problems were addressed and experimented with, the results are in test_experiments.ipynb
+- Finally a basic Github Actions workflow was set up to run the unit tests on every push/pull request
+
+For more details on the workflow see the to-do list 'Adding tests and github actions' under Github Projects
+
 ## Milestone 2(b) - Political Spectrum Speculator 'polispec' Library 
 ### Mission
 My project was to build a library that analyses sentiment of tweets about prominent politicians and gives statistics on number of positive vs. negative tweets about them. The mission is to create an easy way to get informed about how popular certain politicians are and also perhaps get a reality check regarding 'the other side', the politicians you don't agree with. Trump might seem really unpopular in someone's circle, but how many people are tweeting about him with positive sentiment? Is Biden becomin increasingly unpopular? The library should also have functions to get actual text examples of what people are saying in their tweets. That way it can give both numerical and conceptual insight simultaniously.
 
 ### Implementation
-The resulting library can be found under the folder /polispec in this repository. The implementation went overall well with the mvp goal reached and some of the other user stories as well (defined under milestone 2a). I organized the modular design so that the user would only have to use simple commands to get statistics and/or examples. Two modules, 'twitter.py' and 'google_api.py' are background modules that organize communication with the twitter and google APIs, handling authentication and requests. The user does not interact with those. The main module is the 'polispec.py' that utilises the other two modules and which contains the classes and functions needed for analysis. This is the module the user imports from and interacts with.
+The resulting library can be found under the folder /polispec in this repository. The implementation went overall well with the mvp goal reached and some of the other user stories as well (defined under milestone 2a). I organized the modular design so that the user would only have to use simple commands to get statistics and/or examples. Two modules, 'twitter.py' and 'google_api.py' are background modules that organize communication with the twitter and google APIs, handling authentication and requests. The user does not interact with those. The main module is the 'polispec.py' that utilises the other two modules and which contains the classes and functions needed for analysis. This is the module the user imports from and interacts with
 
 ### How to test/run
 In the /polispec folder there is also a jupyter notebook with a short demo of the library, 'polispec_demo.ipynb! It should be easy to run, only requiring some change of variables for authentication.<br>
