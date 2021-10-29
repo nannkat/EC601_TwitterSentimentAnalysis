@@ -4,7 +4,7 @@ from google.cloud import language_v1
 
 """Functions related to connecting to and requesting from the Google API"""
 
-CRED_PATH = "/Users/Nanna/Desktop/EC601/google_keys/sentiment-analysis-test-327412-c89ef3ef857c.json"
+CRED_PATH = "/Users/Nanna/Desktop/EC601/twitter_sentiment_analysis/google_keys/sentiment-analysis-test-327412-c89ef3ef857c.json"
 """Please replace the path to the google api credentials json file with your own."""
  
 

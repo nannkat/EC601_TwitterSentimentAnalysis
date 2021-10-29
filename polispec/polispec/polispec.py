@@ -1,10 +1,10 @@
 from ipywidgets.widgets.widget_box import VBox
 import pandas as pd
-import twitter
-from twitter import Tweet
-import google_api
+from .twitter import *
+from .google_api import *
 from prettytable import PrettyTable
 import ipywidgets as widgets
+import time
 
 """The polispec library itself"""
 
@@ -15,6 +15,7 @@ class Politician:
     __NEG = 'Negative'
     __NEUT = 'Neutral'
 
+   
     def __init__(self, name):
         """Takes as input argument string with name of politician and generates Politician object for analysis"""
         self.name = name
@@ -26,7 +27,8 @@ class Politician:
         self.__start_time = None
         self.__end_time = None
         self.__examples = None
-
+    
+    
     def __str__(self):
         return '{}, tweets: {}, positive:{}, negative: {}, neutral: {}'.format(self.name, self.get_tweet_count(), self.get_pos_tweet_count(), self.get_neg_tweet_count(), self.get_neut_tweet_count())
 
@@ -82,10 +84,10 @@ class Politician:
 
     def __create_twitter_query(self, hours):
         """returns url, headers and parameters ready to query"""
-        headers = twitter.create_headers()
-        url = twitter.create_url(self.name)
-        self.__end_time, self.__start_time = twitter.get_dates(hours)
-        parameters = twitter.create_params(max_results=100, start_time=self.__start_time, end_time=self.__end_time)
+        headers = create_headers()
+        url = create_url(self.name)
+        self.__end_time, self.__start_time = get_dates(hours)
+        parameters = create_params(max_results=100, start_time=self.__start_time, end_time=self.__end_time)
 
         print("Query for twitter api: {}".format(url))
 
@@ -93,27 +95,23 @@ class Politician:
     
     def __get_tweet_batch(self, url, headers, parameters, next_token={}, iteration = 0):
         """Returns a batch of tweets and next token for continuation of analysis"""
-        tweet_batch = twitter.connect_to_endpoint_twitter(url, headers, parameters, next_token=next_token)
+        tweet_batch = connect_to_endpoint_twitter(url, headers, parameters, next_token=next_token)
         try:
             next = tweet_batch['meta']['next_token']
-            if iteration == 0:
-                self.__analyzed_tweet_count += len(tweet_batch['data'])
-            else: 
-                self.__analyzed_tweet_count += len(tweet_batch['data'][0:-1])   #prevent duplicates at end/beginning of batch
         except KeyError:
             next = None
-            #self.__analyzed_tweet_count += len(tweet_batch['data']) 
         return (tweet_batch, next)
 
 
-    def analyze_tweets(self, hour_count = 1, display = True):
-        if hour_count > 24:
-            print("Max 1 day!") #for now, to prevent data overflow
+    def analyze_tweets(self, hour_count = 1, max_time = 30,  display = True):
+
+        if hour_count <= 0:
+            print("Hour count can't be negative or 0")
             return
         else:
             #prepare
             self.__hours = hour_count
-            google_client = google_api.get_google_client()
+            google_client = get_google_client()
             print("Google api client connection established...\n")
 
             url, headers, parameters = self.__create_twitter_query(hour_count)
@@ -123,51 +121,80 @@ class Politician:
             tweet_dict = {'sentiment':[], 'text':[], 'score':[], 'like_count':[], 'date':[]}    #dictionary for examples
             next = {}
             iteration = 0
-            while next != None:
-                tweet_batch, next = self.__get_tweet_batch(url, headers, parameters, next_token=next, iteration = iteration)
 
-                #prevent duplicates at end/beginning of batch
-                if iteration == 0:
-                    data = tweet_batch['data']
-                else:
-                    data = tweet_batch['data'][1:]
+            #max time boundary for analysis
+            time_max = time.time() + 60 * max_time
+            valid = True
 
-                #analyze sentiment of batch
-                for response in data:
-                    try:
-                        tweet = Tweet(response)
-                        tweet.clean_tweet()
-                        tweet_dict['date'].append(tweet.get_date())
-                        tweet_dict['like_count'].append(tweet.get_likes())
-                        
-                        text, feeling, score = google_api.analyze_tweet(tweet.text, google_client)
-                        tweet_dict['text'].append(text)
-                        tweet_dict['score'].append(round(float(score),2))
+            try:
+                while next != None:
 
-                        if feeling == 'positive':
-                            tweet_dict['sentiment'].append(self.__POS)
-                            self.__positive_tweet_count += 1
-                        elif feeling == 'negative':
-                            tweet_dict['sentiment'].append(self.__NEG)
-                            self.__negative_tweet_count += 1
-                        else:
-                            tweet_dict['sentiment'].append(self.__NEUT)
-                            self.__neutral_tweet_count +=1
+                    if time.time() > time_max:
+                        print('Max time exceeded')
+                        break
 
-                    except Exception as e:
-                        print(e)
+                    tweet_batch, next = self.__get_tweet_batch(url, headers, parameters, next_token=next, iteration = iteration)
+                    
+                    #check if batch is empty
+                    if tweet_batch['meta']['result_count'] == 0:
+                        print("Query returned no results!")
+                        valid = False
+                        break
+                    
+                    #prevent duplicates at end/beginning of batch
+                    if iteration == 0:
+                        data = tweet_batch['data']
+                    else:
+                        data = tweet_batch['data'][1:]
 
-                #go to next batch at beginning of loop
-                iteration += 1
-                print("Tweets processed: {}".format(self.__analyzed_tweet_count))
+                    #analyze sentiment of batch
+                    for response in data:
+                        try:
+                            tweet = Tweet(response)
+                            tweet.clean_tweet()
+                            tweet_dict['date'].append(tweet.get_date())
+                            tweet_dict['like_count'].append(tweet.get_likes())
+                            
+                            text, feeling, score = analyze_tweet(tweet.text, google_client)
+                            tweet_dict['text'].append(text)
+                            tweet_dict['score'].append(round(float(score),2))
+
+                            if feeling == 'positive':
+                                tweet_dict['sentiment'].append(self.__POS)
+                                self.__positive_tweet_count += 1
+                            elif feeling == 'negative':
+                                tweet_dict['sentiment'].append(self.__NEG)
+                                self.__negative_tweet_count += 1
+                            else:
+                                tweet_dict['sentiment'].append(self.__NEUT)
+                                self.__neutral_tweet_count +=1
+
+                            self.__analyzed_tweet_count += 1
+                            
+                        except Exception as e:
+                            print(e)
+
+                    #go to next batch at beginning of loop
+                    iteration += 1
+                    print("Tweets processed: {}".format(self.__analyzed_tweet_count))
+
+            except KeyboardInterrupt:
+                self.reset()
+                print("Analysis terminated early by user")
+                return
+
         #create example dataframe
-        self.__examples = pd.DataFrame(data=tweet_dict)
-        self.__examples = self.__examples.drop_duplicates()
-        self.__examples = self.__examples.sort_values(by='like_count', ascending=False).reset_index(drop=True)
-        print("Analysis complete.")
-        print()
-        if display:
-            self.display_statistics()
+        if valid:
+            self.__examples = pd.DataFrame(data=tweet_dict)
+            self.__examples = self.__examples.drop_duplicates()
+            self.__examples = self.__examples.sort_values(by='like_count', ascending=False).reset_index(drop=True)
+
+            print()
+            print("Analysis complete.")
+            print()
+
+            if display:
+                self.display_statistics()
 
     def summary(self):
         """Displays a summary with both statistics and a few examples"""

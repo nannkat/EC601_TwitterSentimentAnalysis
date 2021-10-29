@@ -45,6 +45,8 @@ def create_url(name, additional_query_params = ''):
 
 def get_dates(hour_count):
     """"Takes as input a number of hours and returns the both the current time (gmt) and current time subtracted by the hour count given"""
+    if hour_count <= 0:
+        return 'Hour count cant be negative or 0'
     now = datetime.today()
     to_gmt = timedelta(4/24-(1/60)/24)
     now = now + to_gmt
@@ -89,7 +91,6 @@ class Tweet:
     
     def get_date(self):
         return self.time + '-' + self.date
-
 
     def get_likes(self):
         return self.like_count
