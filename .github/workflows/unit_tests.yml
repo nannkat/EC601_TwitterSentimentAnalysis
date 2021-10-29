@@ -33,7 +33,7 @@ jobs:
       #run unit test script
       - name: Run unit tests
         run: |
-          python polispec/unit_tests.py
+          python3 polispec/unit_tests.py
           
 
       # Runs a single command using the runners shell
