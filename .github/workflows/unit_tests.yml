@@ -30,6 +30,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9.2
+      #install google cloud
+      - name: install google
+        run:
+          pip3 install google-cloud-language
       #run unit test script
       - name: Run unit tests
         run: |
