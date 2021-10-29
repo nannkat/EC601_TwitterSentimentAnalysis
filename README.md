@@ -1,5 +1,8 @@
 # Twitter Sentiment Analysis Project
 ## By Nanna Katrín Hannesdóttir
+
+## Project 3(a) Testing
+Currently working on adding tests and actions file....
 ## Milestone 2(b) - Political Spectrum Speculator 'polispec' Library 
 ### Mission
 My project was to build a library that analyses sentiment of tweets about prominent politicians and gives statistics on number of positive vs. negative tweets about them. The mission is to create an easy way to get informed about how popular certain politicians are and also perhaps get a reality check regarding 'the other side', the politicians you don't agree with. Trump might seem really unpopular in someone's circle, but how many people are tweeting about him with positive sentiment? Is Biden becomin increasingly unpopular? The library should also have functions to get actual text examples of what people are saying in their tweets. That way it can give both numerical and conceptual insight simultaniously.
