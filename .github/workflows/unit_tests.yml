@@ -35,7 +35,7 @@ jobs:
         run: |
           pip3 install google-cloud-language
           pip3 install ipywidgets
-          pip3 install yaml
+          pip3 install pyaml
           pip3 install re
           pip3 install datetime
           pip3 install json
