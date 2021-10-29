@@ -32,8 +32,16 @@ jobs:
           python-version: 3.9.2
       #install google cloud
       - name: install google
-        run:
+        run: |
           pip3 install google-cloud-language
+          pip3 install ipywidgets
+          pip3 install yaml
+          pip3 install re
+          pip3 install datetime
+          pip3 install json
+          pip3 install prettytable
+          pip3 install pandas
+          
       #run unit test script
       - name: Run unit tests
         run: |
