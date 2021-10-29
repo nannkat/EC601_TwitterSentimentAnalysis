@@ -33,14 +33,14 @@ jobs:
       #install google cloud
       - name: install google
         run: |
-          python3 pip3 install google-cloud-language
-          python3 pip3 install ipywidgets
-          python3 pip3 install pyaml
-          python3 pip3 install re
-          python3 pip3 install datetime
-          python3 pip3 install json
-          python3 pip3 install prettytable
-          python3 pip3 install pandas
+          pip3 install google-cloud-language
+          pip3 install ipywidgets
+          pip3 install pyaml
+          -m pip3 install re
+          pip3 install datetime
+          pip3 install json
+          pip3 install prettytable
+          pip3 install pandas
           
       #run unit test script
       - name: Run unit tests
