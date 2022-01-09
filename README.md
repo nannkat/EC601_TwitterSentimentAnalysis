@@ -1,17 +1,6 @@
 # Twitter Sentiment Analysis Project
 ## By Nanna Katrín Hannesdóttir
 
-## Project 3(a) Testing
-For this project some tests and modifications were added.
-
-Following is an overview of the modifications:
-- The polispec library was made into a library by adding a __init__.py, it is now stored in a subfolder polispec/polispec. The demo is still in polispec/polispec_demo.ipynb.
-- Unit tests were designed using the python unittest module, they are stored under polispec/unit_tests.py
-- Some larger problems were addressed and experimented with, the results are in test_experiments.ipynb
-- Finally a basic Github Actions workflow was set up to run the unit tests on every push/pull request
-
-For more details on the workflow see the to-do list 'Adding tests and github actions' under Github Projects
-
 ## Milestone 2(b) - Political Spectrum Speculator 'polispec' Library 
 ### Mission
 My project was to build a library that analyses sentiment of tweets about prominent politicians and gives statistics on number of positive vs. negative tweets about them. The mission is to create an easy way to get informed about how popular certain politicians are and also perhaps get a reality check regarding 'the other side', the politicians you don't agree with. Trump might seem really unpopular in someone's circle, but how many people are tweeting about him with positive sentiment? Is Biden becomin increasingly unpopular? The library should also have functions to get actual text examples of what people are saying in their tweets. That way it can give both numerical and conceptual insight simultaniously.
@@ -45,6 +34,17 @@ With this in place, running the demo should be straight forward.
 
 ### Conclusion
 This was a fun project and I feel lucky to get the chance to explore these APIs. It gave me good insights into modular design and organization and building queries and requests. It also gave me some insight into the status of natural language processing. As my library included in part displaying text examples of tweets, I got a look at how well the google api sentiment analysis was doing from time to time. The biggest problem seemed to be that the API can't detect sarcasm. On twitter many people use sarcasm to express themselves and this resulted in some pretty drastic misclassifications. Tweets about politicians were often said to be positive when in reality the person was clearly using positive words in a sarcastic manner. It will be interesting to see how engineers try to tackle this problem in the future. Can computers be sarcastic?
+
+## Project 3(a) Testing
+For this project some tests and modifications were added.
+
+Following is an overview of the modifications:
+- The polispec library was made into a library by adding a __init__.py, it is now stored in a subfolder polispec/polispec. The demo is still in polispec/polispec_demo.ipynb.
+- Unit tests were designed using the python unittest module, they are stored under polispec/unit_tests.py
+- Some larger problems were addressed and experimented with, the results are in test_experiments.ipynb
+- Finally a basic Github Actions workflow was set up to run the unit tests on every push/pull request
+
+For more details on the workflow see the to-do list 'Adding tests and github actions' under Github Projects
 
 # Older Milestones
 ## Milestone 1(a) - Experimenting with the Twitter API
